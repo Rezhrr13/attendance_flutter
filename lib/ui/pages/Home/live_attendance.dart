@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'history_list.dart';
 import 'main_page.dart';
+import 'package:http/http.dart' as http;
 
 class LiveAttendance extends StatefulWidget {
   const LiveAttendance({Key key}) : super(key: key);
@@ -133,6 +134,25 @@ class _LiveAttendanceState extends State<LiveAttendance> {
                                         title: 'Clock In',
                                         width: 290,
                                         onPressed: () async {
+                                          //buat predict
+                                          var request = http.MultipartRequest(
+                                              'POST',
+                                              Uri.parse(
+                                                  'http://127.0.0.1:5000/predict'));
+                                          request.files.add(
+                                              await http.MultipartFile.fromPath(
+                                                  'image', image.toString()));
+                                          http.StreamedResponse response =
+                                              await request.send();
+                                          if (response.statusCode == 200) {
+                                            print(await response.stream
+                                                .bytesToString());
+                                            print('berhasil');
+                                          } else {
+                                            print(response.reasonPhrase);
+                                            print('gagal');
+                                          }
+
                                           setState(() {
                                             attendance = true;
                                           });

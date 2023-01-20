@@ -100,7 +100,7 @@ class _HomeState extends State<Home> {
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Text(
-                          'Your name',
+                          'Rezhrr',
                           textAlign: TextAlign.left,
                           style: whiteText.copyWith(
                             fontSize: 16,
