@@ -1,4 +1,6 @@
+import 'package:attendancce/helpers/firebase_helper.dart';
 import 'package:attendancce/ui/widgets/button_component.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:attendancce/shared/theme_style.dart';
 import 'package:image_picker/image_picker.dart';
@@ -22,6 +24,19 @@ class _LiveAttendanceState extends State<LiveAttendance> {
   File image;
   bool attendance = false;
   List<AttnList> cardList = AttnList.cardList;
+
+  var loginUser = FirebaseAuth.instance.currentUser;
+
+  final auth = FirebaseAuth.instance;
+
+  Service service = Service();
+
+  getCurrentUser() {
+    final user = auth.currentUser;
+    if (user != null) {
+      loginUser = user;
+    }
+  }
 
   Future<void> getPreference() async {
     final prefs = await SharedPreferences.getInstance();
@@ -49,185 +64,274 @@ class _LiveAttendanceState extends State<LiveAttendance> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Live Attendance'),
-          elevation: 1,
-        ),
-        body: SafeArea(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: getCamera,
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: bgDisable,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16),
-                        )),
-                    child: image != null
-                        ? Image.file(
-                            image,
-                          )
-                        : Image.asset(
-                            'assets/ic_img_placeholder.png',
-                            alignment: Alignment.center,
-                          ),
-                  ),
+      appBar: AppBar(
+        title: const Text('Live Attendance'),
+        elevation: 1,
+      ),
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: getCamera,
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: bgDisable,
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      )),
+                  child: image != null
+                      ? Image.file(
+                          image,
+                        )
+                      : Image.asset(
+                          'assets/ic_img_placeholder.png',
+                          alignment: Alignment.center,
+                        ),
                 ),
               ),
-              Container(
-                width: MediaQuery.of(context).size.width,
-                padding: const EdgeInsets.only(
-                  top: 32,
-                  bottom: 54,
+            ),
+            Container(
+              width: MediaQuery.of(context).size.width,
+              padding: const EdgeInsets.only(
+                top: 32,
+                bottom: 54,
+              ),
+              decoration: BoxDecoration(
+                color: primary,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
                 ),
-                decoration: BoxDecoration(
-                  color: primary,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Text(
-                                DateFormat('Hm').format(
-                                  DateTime.now(),
-                                ),
-                                style: whiteText.copyWith(
-                                  fontWeight: bold,
-                                  fontSize: 24,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 8,
-                          ),
                           Text(
-                            DateFormat('EEEE, dd MMM yy').format(
+                            DateFormat('Hm').format(
                               DateTime.now(),
                             ),
                             style: whiteText.copyWith(
-                              fontWeight: medium,
-                              fontSize: 16,
+                              fontWeight: bold,
+                              fontSize: 24,
                             ),
                           ),
-                          const SizedBox(
-                            height: 32,
-                          ),
-                          FutureBuilder(
-                              future: getPreference(),
-                              builder: (context, snapshot) {
-                                return (attendance == false)
-                                    ? ButtonPrimaryDark(
-                                        title: 'Clock In',
-                                        width: 290,
-                                        onPressed: () async {
-                                          //buat predict
-                                          var request = http.MultipartRequest(
-                                              'POST',
-                                              Uri.parse(
-                                                  'http://127.0.0.1:5000/predict'));
-                                          request.files.add(
-                                              await http.MultipartFile.fromPath(
-                                                  'image', image.toString()));
-                                          http.StreamedResponse response =
-                                              await request.send();
-                                          if (response.statusCode == 200) {
-                                            print(await response.stream
-                                                .bytesToString());
-                                            print('berhasil');
-                                          } else {
-                                            print(response.reasonPhrase);
-                                            print('gagal');
-                                          }
-
-                                          setState(() {
-                                            attendance = true;
-                                          });
-                                          final prefs = await SharedPreferences
-                                              .getInstance();
-                                          final present =
-                                              DateFormat('Hm').format(
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        DateFormat('EEEE, dd MMM yy').format(
+                          DateTime.now(),
+                        ),
+                        style: whiteText.copyWith(
+                          fontWeight: medium,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 32,
+                      ),
+                      FutureBuilder(
+                        future: getPreference(),
+                        builder: (context, snapshot) {
+                          return (attendance == false)
+                              ? ButtonPrimaryDark(
+                                  title: 'Clock In',
+                                  width: 290,
+                                  onPressed: () async {
+                                    //buat predict
+                                    var request = http.MultipartRequest(
+                                      'POST',
+                                      Uri.parse('http://192.168.1.104:5000'),
+                                      // 'http://127.0.0.1:5000'),
+                                    );
+                                    request.files.add(
+                                      await http.MultipartFile.fromPath(
+                                          'image', image.path),
+                                    );
+                                    request.fields.addEntries(
+                                      [
+                                        MapEntry(
+                                          "name",
+                                          loginUser.email.toString().substring(
+                                              0, loginUser.email.indexOf("@")),
+                                        ),
+                                      ],
+                                    );
+                                    request.fields.addEntries(
+                                      [
+                                        MapEntry(
+                                          "user_id",
+                                          loginUser.uid.toString(),
+                                        ),
+                                      ],
+                                    );
+                                    request.fields.addEntries([
+                                      MapEntry(
+                                          "time",
+                                          DateFormat('Hm').format(
                                             DateTime.now(),
-                                          );
-                                          if (prefs.containsKey('present')) {
-                                            prefs.clear();
-                                          }
-                                          if (prefs.containsKey('attendance')) {
-                                            prefs.clear();
-                                          }
+                                          ))
+                                    ]);
+                                    request.fields.addEntries(
+                                      [
+                                        MapEntry(
+                                          "attendance_type",
+                                          "Clock In",
+                                        ),
+                                      ],
+                                    );
 
-                                          prefs.setString('present', present);
-                                          prefs.setBool(
-                                              'attendance', attendance);
-                                          cardList.add(
-                                            AttnList(
-                                              date: DateFormat('dd MMM yyyy')
-                                                  .format(
-                                                DateTime.now(),
-                                              ),
-                                              clockoutdate: '-- : --',
-                                              clockindate:
-                                                  DateFormat('Hm').format(
-                                                DateTime.now(),
-                                              ),
-                                            ),
-                                          );
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const MainPage()));
-                                        },
-                                      )
-                                    :
-                                    // BUTTON SIGN UP
-                                    ButtonSecondaryDark(
-                                        title: 'Clock Out',
-                                        width: 290,
-                                        onPressed: () async {
-                                          setState(() {
-                                            attendance = false;
-                                          });
-                                          final prefs = await SharedPreferences
-                                              .getInstance();
-                                          final absent =
-                                              DateFormat('Hm').format(
+                                    http.StreamedResponse response =
+                                        await request.send();
+                                    if (response.statusCode == 200) {
+                                      print(
+                                        await response.stream.bytesToString(),
+                                      );
+                                      print('berhasil');
+                                    } else {
+                                      print(response.reasonPhrase);
+                                      print('gagal');
+                                    }
+
+                                    setState(() {
+                                      attendance = true;
+                                    });
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    final present = DateFormat('Hm').format(
+                                      DateTime.now(),
+                                    );
+                                    if (prefs.containsKey('present')) {
+                                      prefs.clear();
+                                    }
+                                    if (prefs.containsKey('attendance')) {
+                                      prefs.clear();
+                                    }
+
+                                    prefs.setString('present', present);
+                                    prefs.setBool('attendance', attendance);
+                                    cardList.add(
+                                      AttnList(
+                                        date: DateFormat('dd MMM yyyy').format(
+                                          DateTime.now(),
+                                        ),
+                                        clockoutdate: '-- : --',
+                                        clockindate: DateFormat('Hm').format(
+                                          DateTime.now(),
+                                        ),
+                                      ),
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const MainPage(),
+                                      ),
+                                    );
+                                  },
+                                )
+                              :
+                              // BUTTON SIGN UP
+                              ButtonSecondaryDark(
+                                  title: 'Clock Out',
+                                  width: 290,
+                                  onPressed: () async {
+                                    var request = http.MultipartRequest(
+                                      'POST',
+                                      Uri.parse('http://192.168.1.104:5000'),
+                                      // 'http://127.0.0.1:5000'),
+                                    );
+                                    request.files.add(
+                                      await http.MultipartFile.fromPath(
+                                          'image', image.path),
+                                    );
+                                    request.fields.addEntries(
+                                      [
+                                        MapEntry(
+                                          "name",
+                                          loginUser.email.toString().substring(
+                                              0, loginUser.email.indexOf("@")),
+                                        ),
+                                      ],
+                                    );
+                                    request.fields.addEntries(
+                                      [
+                                        MapEntry(
+                                          "user_id",
+                                          loginUser.uid.toString(),
+                                        ),
+                                      ],
+                                    );
+                                    request.fields.addEntries([
+                                      MapEntry(
+                                          "time",
+                                          DateFormat('Hm').format(
                                             DateTime.now(),
-                                          );
-                                          if (prefs.containsKey('absent')) {
-                                            prefs.clear();
-                                          }
+                                          ))
+                                    ]);
+                                    request.fields.addEntries(
+                                      [
+                                        MapEntry(
+                                          "attendance_type",
+                                          "Clock Out",
+                                        ),
+                                      ],
+                                    );
+                                    http.StreamedResponse response =
+                                        await request.send();
+                                    if (response.statusCode == 200) {
+                                      print(
+                                        await response.stream.bytesToString(),
+                                      );
+                                      print('berhasil');
+                                    } else {
+                                      print(response.reasonPhrase);
+                                      print('gagal');
+                                    }
 
-                                          prefs.setString('absent', absent);
-                                          prefs.setBool(
-                                              'attendance', attendance);
+                                    setState(() {
+                                      attendance = false;
+                                    });
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    final absent = DateFormat('Hm').format(
+                                      DateTime.now(),
+                                    );
+                                    if (prefs.containsKey('absent')) {
+                                      prefs.clear();
+                                    }
 
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      const MainPage()));
-                                        });
-                              }),
-                        ]),
-                  ],
-                ),
+                                    prefs.setString('absent', absent);
+                                    prefs.setBool('attendance', attendance);
+
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const MainPage(),
+                                      ),
+                                    );
+                                  },
+                                );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-        ));
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

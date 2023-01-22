@@ -1,7 +1,9 @@
+import 'package:attendancce/helpers/firebase_helper.dart';
 import 'package:attendancce/shared/theme_style.dart';
 import 'package:attendancce/ui/widgets/button_component.dart';
 import 'package:attendancce/ui/widgets/inputform_component.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignIn extends StatefulWidget {
   const SignIn({Key key}) : super(key: key);
@@ -12,6 +14,10 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final _formKey = GlobalKey<FormState>();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  Service service = Service();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,20 +70,22 @@ class _SignInState extends State<SignIn> {
                 height: 24,
               ),
               //INPUT FORM USERNAME
-              const DefaultForm(
+              DefaultForm(
                 title: 'Username',
                 errorcase: 'Username has not been filled',
                 name: 'Input username',
+                controller: emailController,
               ),
               const SizedBox(
                 height: 16,
               ),
               //INPUT FORM PASSWORD
-              const DefaultForm(
+              DefaultForm(
                 title: 'Password',
                 obsureText: true,
                 errorcase: 'Password has not been filled',
                 name: 'Input password',
+                controller: passwordController,
               ),
               const SizedBox(
                 height: 32,
@@ -85,11 +93,27 @@ class _SignInState extends State<SignIn> {
               //BUTTON SIGN IN
               ButtonPrimaryClr(
                 title: 'Sign In',
-                onPressed: () {
+                onPressed: () async {
                   if (!_formKey.currentState.validate()) {
                     return;
                   }
-                  Navigator.pushNamed(context, '/Nav');
+                  SharedPreferences pref =
+                      await SharedPreferences.getInstance();
+                  if (emailController.text.isNotEmpty &&
+                      passwordController.text.isNotEmpty) {
+                    service.loginUser(
+                      context,
+                      emailController.text,
+                      passwordController.text,
+                    );
+                    pref.setString("email", emailController.text);
+                    // Navigator.pushReplacementNamed(context, '/Nav');
+                  } else {
+                    service.errorBox(
+                      context,
+                      "Email dan password tidak boleh kosong",
+                    );
+                  }
                 },
               ),
               const SizedBox(
