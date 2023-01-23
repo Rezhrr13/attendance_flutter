@@ -1,11 +1,15 @@
+import 'package:attendancce/helpers/firebase_helper.dart';
 import 'package:attendancce/ui/widgets/card_attendance.dart';
 import 'package:attendancce/ui/widgets/card_this_day.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:attendancce/shared/theme_style.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'history_list.dart';
 import 'history_menu.dart';
+
+var loginUser = FirebaseAuth.instance.currentUser;
 
 class Home extends StatefulWidget {
   const Home({Key key}) : super(key: key);
@@ -19,6 +23,17 @@ class _HomeState extends State<Home> {
   String absent;
   int sick;
   int permission;
+
+  final auth = FirebaseAuth.instance;
+
+  Service service = Service();
+
+  getCurrentUser() {
+    final user = auth.currentUser;
+    if (user != null) {
+      loginUser = user;
+    }
+  }
 
   Future<void> getPreference() async {
     final prefs = await SharedPreferences.getInstance();
@@ -100,7 +115,9 @@ class _HomeState extends State<Home> {
                       mainAxisSize: MainAxisSize.max,
                       children: [
                         Text(
-                          'Rezhrr',
+                          loginUser.email
+                              .toString()
+                              .substring(0, loginUser.email.indexOf("@")),
                           textAlign: TextAlign.left,
                           style: whiteText.copyWith(
                             fontSize: 16,

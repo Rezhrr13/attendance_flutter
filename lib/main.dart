@@ -13,13 +13,14 @@ import 'package:attendancce/ui/pages/Home/home_menu.dart';
 import 'package:attendancce/ui/pages/Onboard/on_boarding.dart';
 import 'package:attendancce/ui/pages/Onboard/signin_menu.dart';
 import 'package:attendancce/ui/pages/Onboard/splash_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cron/cron.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await Firebase.initializeApp();
   AwesomeNotifications().initialize(null, // icon for your app notification
       [
         NotificationChannel(
