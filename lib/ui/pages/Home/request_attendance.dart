@@ -4,11 +4,16 @@ import 'package:attendancce/ui/widgets/button_component.dart';
 import 'package:attendancce/ui/widgets/datetimepicker_component.dart';
 import 'package:attendancce/ui/widgets/dropdown_component.dart';
 import 'package:attendancce/ui/widgets/inputform_component.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'history_list.dart';
+import 'package:http/http.dart' as http;
+
+var loginUser = FirebaseAuth.instance.currentUser;
 
 class RequestAttendance extends StatefulWidget {
   const RequestAttendance({Key key}) : super(key: key);
@@ -158,6 +163,57 @@ class _RequestAttendanceState extends State<RequestAttendance> {
                         onPressed: () async {
                           if (!_formKey.currentState.validate()) {
                             return;
+                          }
+
+                          var request = http.MultipartRequest(
+                            'POST',
+                            Uri.parse(
+                              'http://192.168.8.149:5000/request',
+                            ),
+                            // 'http://127.0.0.1:5000'),
+                          );
+
+                          // request.files.add(
+                          //   await http.MultipartFile.fromPath('attachment', ''),
+                          // );
+
+                          request.fields.addEntries(
+                            [
+                              MapEntry(
+                                "user_id",
+                                loginUser.email.toString().substring(
+                                    loginUser.email.indexOf('_') + 1,
+                                    loginUser.email.indexOf("@")),
+                              ),
+                            ],
+                          );
+
+                          request.fields.addEntries([
+                            MapEntry(
+                                "request_attendance_date",
+                                DateFormat('Hms').format(
+                                  DateTime.now(),
+                                ))
+                          ]);
+
+                          request.fields.addEntries(
+                            [MapEntry("request_type_id", 1.toString())],
+                          );
+
+                          request.fields.addEntries(
+                            [MapEntry("notes", "sick")],
+                          );
+
+                          http.StreamedResponse response = await request.send();
+
+                          if (response.statusCode == 200) {
+                            print(
+                              await response.stream.bytesToString(),
+                            );
+                            print('berhasil');
+                          } else {
+                            print(response.reasonPhrase);
+                            print('gagal');
                           }
 
                           final prefs = await SharedPreferences.getInstance();
