@@ -17,6 +17,7 @@ class _SignInState extends State<SignIn> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   Service service = Service();
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -90,32 +91,61 @@ class _SignInState extends State<SignIn> {
               const SizedBox(
                 height: 32,
               ),
-              //BUTTON SIGN IN
-              ButtonPrimaryClr(
-                title: 'Sign In',
-                onPressed: () async {
-                  if (!_formKey.currentState.validate()) {
-                    return;
-                  }
-                  SharedPreferences pref =
-                      await SharedPreferences.getInstance();
-                  if (emailController.text.isNotEmpty &&
-                      passwordController.text.isNotEmpty) {
-                    service.loginUser(
-                      context,
-                      emailController.text,
-                      passwordController.text,
-                    );
-                    pref.setString("email", emailController.text);
-                    // Navigator.pushReplacementNamed(context, '/Nav');
-                  } else {
-                    service.errorBox(
-                      context,
-                      "Email dan password tidak boleh kosong",
-                    );
-                  }
-                },
+              SizedBox(
+                height: 48,
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () async {
+                    setState(() {
+                      isLoading = true;
+                    });
+                    if (!_formKey.currentState.validate()) {
+                      return;
+                    }
+                    SharedPreferences pref =
+                        await SharedPreferences.getInstance();
+                    if (emailController.text.isNotEmpty &&
+                        passwordController.text.isNotEmpty) {
+                      service.loginUser(
+                        context,
+                        emailController.text,
+                        passwordController.text,
+                      );
+                      pref.setString("email", emailController.text);
+                      // Navigator.pushReplacementNamed(context, '/Nav');
+                    } else {
+                      service.errorBox(
+                        context,
+                        "Email dan password tidak boleh kosong",
+                      );
+                    }
+                    setState(() {
+                      isLoading = false;
+                    });
+                  },
+                  child: isLoading
+                      ? CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : Text(
+                          "Sign In",
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                  ),
+                ),
               ),
+              //BUTTON SIGN IN
+              // ButtonPrimaryClr(
+              //   title: 'Sign In',
+              //   onPressed: () async {},
+              // ),
               const SizedBox(
                 height: 24,
               ),

@@ -152,7 +152,9 @@ class _LiveAttendanceState extends State<LiveAttendance> {
                                     //buat predict
                                     var request = http.MultipartRequest(
                                       'POST',
-                                      Uri.parse('http://192.168.1.104:5000'),
+                                      Uri.parse(
+                                        'http://192.168.8.149:5000/predict',
+                                      ),
                                       // 'http://127.0.0.1:5000'),
                                     );
                                     request.files.add(
@@ -162,35 +164,20 @@ class _LiveAttendanceState extends State<LiveAttendance> {
                                     request.fields.addEntries(
                                       [
                                         MapEntry(
-                                          "name",
-                                          loginUser.email.toString().substring(
-                                              0, loginUser.email.indexOf("@")),
-                                        ),
-                                      ],
-                                    );
-                                    request.fields.addEntries(
-                                      [
-                                        MapEntry(
                                           "user_id",
-                                          loginUser.uid.toString(),
+                                          loginUser.email.toString().substring(
+                                              loginUser.email.indexOf('_') + 1,
+                                              loginUser.email.indexOf("@")),
                                         ),
                                       ],
                                     );
                                     request.fields.addEntries([
                                       MapEntry(
                                           "time",
-                                          DateFormat('Hm').format(
+                                          DateFormat('Hms').format(
                                             DateTime.now(),
                                           ))
                                     ]);
-                                    request.fields.addEntries(
-                                      [
-                                        MapEntry(
-                                          "attendance_type",
-                                          "Clock In",
-                                        ),
-                                      ],
-                                    );
 
                                     http.StreamedResponse response =
                                         await request.send();
@@ -248,7 +235,8 @@ class _LiveAttendanceState extends State<LiveAttendance> {
                                   onPressed: () async {
                                     var request = http.MultipartRequest(
                                       'POST',
-                                      Uri.parse('http://192.168.1.104:5000'),
+                                      Uri.parse(
+                                          'http://192.168.8.149:5000/clockout'),
                                       // 'http://127.0.0.1:5000'),
                                     );
                                     request.files.add(
@@ -258,35 +246,20 @@ class _LiveAttendanceState extends State<LiveAttendance> {
                                     request.fields.addEntries(
                                       [
                                         MapEntry(
-                                          "name",
-                                          loginUser.email.toString().substring(
-                                              0, loginUser.email.indexOf("@")),
-                                        ),
-                                      ],
-                                    );
-                                    request.fields.addEntries(
-                                      [
-                                        MapEntry(
                                           "user_id",
-                                          loginUser.uid.toString(),
+                                          loginUser.email.toString().substring(
+                                              loginUser.email.indexOf('_') + 1,
+                                              loginUser.email.indexOf("@")),
                                         ),
                                       ],
                                     );
                                     request.fields.addEntries([
                                       MapEntry(
                                           "time",
-                                          DateFormat('Hm').format(
+                                          DateFormat('Hms').format(
                                             DateTime.now(),
                                           ))
                                     ]);
-                                    request.fields.addEntries(
-                                      [
-                                        MapEntry(
-                                          "attendance_type",
-                                          "Clock Out",
-                                        ),
-                                      ],
-                                    );
                                     http.StreamedResponse response =
                                         await request.send();
                                     if (response.statusCode == 200) {
